@@ -20,17 +20,6 @@ def prepare(app, description, verbosity):
                                 verbosity=verbosity)
 
 
-def add_subcommands(subcmd_modules, parser):
-    subparsers = parser.add_subparsers(dest='subcommand')
-    for module in subcmd_modules:
-        subcommand = subparsers.add_parser(
-            name=module.__name__.split('.')[-1],
-            help=module.__doc__ or '',
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter
-        )
-        module.cli(subcommand)
-
-
 class CommandLineInterface(object):
     def __init__(self, app, description, verbosity):
         self.app = app
@@ -66,7 +55,7 @@ class CommandLineInterface(object):
         return args
 
     def load_subcommands(self):
-        subcommand_directory = Path(__file__).parent / 'scripts'
+        subcommand_directory = Path(__file__).parent / 'commandline' / 'scripts'
         for subcommand_module_file in subcommand_directory.glob('*.py'):
             subcommand_module_filename = subcommand_module_file.name
 
@@ -77,7 +66,7 @@ class CommandLineInterface(object):
             # Strip Python extension from module name to get subcommand name
             subcommand_module_name = subcommand_module_filename.replace('.py', '')
 
-            subcommand_package = f'{self.app}.cli.scripts.{subcommand_module_name}'
+            subcommand_package = f'{self.app}.commandline.scripts.{subcommand_module_name}'
             yield importlib.import_module(name=subcommand_package)
 
     def __enter__(self):

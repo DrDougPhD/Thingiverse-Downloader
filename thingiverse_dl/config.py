@@ -5,4 +5,4 @@
 class defaults(object):
     '''Default configuration for application
     '''
-    subcommand = 'subcommand'
+    subcommand = 'user'

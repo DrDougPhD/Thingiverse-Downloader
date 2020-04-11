@@ -30,7 +30,7 @@ LICENSE
 import logging
 import progressbar
 
-from thingiverse import cli
+from thingiverse_dl import cli
 
 
 __appname__ = "thingiverse_dl"

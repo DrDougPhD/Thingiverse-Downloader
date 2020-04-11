@@ -20,8 +20,8 @@ setup(
     keywords="thingiverse",
     url="https://github.com/DrDougPhD/Thingiverse-Downloader",
     packages=['thingiverse',
-              'thingiverse.cli',
-              'thingiverse.cli.scripts'],
+              'thingiverse.commandline',
+              'thingiverse.commandline.scripts'],
     classifiers=[
         "Topic :: Utilities",
     ],

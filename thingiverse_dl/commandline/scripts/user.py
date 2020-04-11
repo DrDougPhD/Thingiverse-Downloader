@@ -7,7 +7,7 @@ import logging
 import argparse
 import sys
 
-import config
+from thingiverse_dl import config
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +16,8 @@ def cli(subcommand):
     '''Add command-line arguments to this subcommand
     '''
     subcommand.add_argument(
-        '-i', '--input',
-        type=argparse.FileType('r'),
-        default=config.defaults.input,
-        help='input file',
+        'username',
+        help='username from whom to download',
     )
     subcommand.set_defaults(func=main)
 
