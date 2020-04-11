@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Module __doc__ for displaying a helpful message about 
-what this subcommand does"""
+"""Download all stuff uploaded by a user"""
 
 import logging
-import argparse
 import sys
 
 from thingiverse_dl import config
