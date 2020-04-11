@@ -1,0 +1,4 @@
+colorlog==4.1.0
+humanfriendly==8.1
+termcolor==1.1.0
+progressbar2==3.50.1
