@@ -3,9 +3,9 @@
 """Download all stuff uploaded by a user"""
 
 import logging
-import sys
 
 from thingiverse_dl import config
+from thingiverse_dl.api import users
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,4 @@ def cli(subcommand):
 
 def main(args):
     # read from file system to learn about albums that have been ripped
-    raise NotImplementedError('{0} {1} subcommand is not implemented!'.format(
-        *sys.argv
-    ))
+    user = users.get(username=args.username)
