@@ -44,7 +44,25 @@ class SingleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         logger.warning('HTTP GET RECEIVED!')
         logger.info(self.path)
-        self.send_response(200)
-        self.end_headers()
         self.server.requested_url = self.path
+
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+
         self.server.stop = True
+
+        # Doesn't auto-close page just yet :/
+        self.wfile.write(b'''
+        <html>
+            <head>
+            </head>
+            <body>
+                <script type='text/javascript'>
+                    window.onload = function() {
+                        window.close();
+                    };
+                </script>
+            </body>
+        </html>
+        ''')
