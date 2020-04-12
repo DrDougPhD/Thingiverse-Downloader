@@ -17,17 +17,22 @@ def required(function):
         # thingiverse = OAuth2Session(client_id=config.secrets.client_id)
         auth_url = AuthenticationURLBuilder(
             client_id=config.secrets.client_id,
-            redirect_uri='http://localhost:8888/blah',
+            redirect_uri='http://localhost:8888/callback',
             response_type='code',
         )
 
         # Start a server to wait for user authentication and redirection from
         # Thingiverse to this app.
-        server = tempserver.run(port=8888)
-        webbrowser.open_new_tab(url=str(auth_url))
-        logger.info(f'Opening {auth_url}')
-        server.serve_forever()
-        url = server.requested_url
+        with tempserver.create(port=8888) as server:
+            webbrowser.open_new_tab(url=str(auth_url))
+            logger.info(f'Opening {auth_url}')
+            server.serve_forever()
+
+        parsed_callback_url = urllib.parse.urlparse(server.requested_url)
+        query = urllib.parse.parse_qs(parsed_callback_url.query)
+        code = query['code']
+
+        logger.warning(f'Callback url: {code}')
 
         result = function(*args, **kwargs)
         logger.info(f'Returned value: {result}')

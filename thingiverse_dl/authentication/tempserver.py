@@ -1,14 +1,43 @@
 import http.server
 import logging
-from typing import Tuple
-from typing import Callable
 
 logger = logging.getLogger(__name__)
 
 
-def run(port=8888):
-    server_address = ('', port)
-    return StoppableHttpServer(server_address, SingleHTTPRequestHandler)
+def create(port=8888):
+    return StoppableHTTPServer(port=port)
+
+
+class StoppableHTTPServer(http.server.HTTPServer):
+    """http server that reacts to self.stop flag"""
+    def __init__(self, port):
+        server_address = ('', port)
+        super().__init__(server_address, SingleHTTPRequestHandler)
+        self.requested_url = None
+
+    def serve_forever(self, **kwargs):
+        """Handle one request at a time until stopped.
+        :param **kwargs:
+        """
+        self.stop = False
+        while not self.stop:
+            self.handle_request()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type in (KeyboardInterrupt, SystemExit):
+            return False
+
+        elif exc_type is not None:
+            logger.exception("Something happened and I don't know "
+                             "what to do")
+            return False
+
+        else:
+            logger.info('Authentication code catching server terminating')
+            return True
 
 
 class SingleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -19,18 +48,3 @@ class SingleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.server.requested_url = self.path
         self.server.stop = True
-
-
-class StoppableHttpServer(http.server.HTTPServer):
-    def __init__(self, server_address: Tuple[str, int], RequestHandlerClass: Callable[..., http.server.BaseHTTPRequestHandler]):
-        super().__init__(server_address, RequestHandlerClass)
-        self.requested_url = None
-
-    """http server that reacts to self.stop flag"""
-    def serve_forever(self, **kwargs):
-        """Handle one request at a time until stopped.
-        :param **kwargs:
-        """
-        self.stop = False
-        while not self.stop:
-            self.handle_request()
