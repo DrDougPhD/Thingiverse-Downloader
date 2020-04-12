@@ -10,8 +10,6 @@ from pathlib import Path
 from io import TextIOWrapper
 from datetime import datetime
 
-from . import config
-
 
 def prepare(app, description, verbosity):
     argparse.ArgumentParser.set_default_subparser = set_default_subparser
@@ -22,13 +20,12 @@ def prepare(app, description, verbosity):
 
 class CommandLineInterface(object):
     def __init__(self, app, description, verbosity):
+        self.log = logging.getLogger(app)
         self.app = app
         self.description = description
-
+        self.verbosity = verbosity
+        self.arguments = None
         self.start_time = datetime.now()
-
-        self.arguments = self.read_cli_arguments(description, verbosity)
-        self.log = logging.getLogger(app)
 
     def read_cli_arguments(self, description, verbosity):
         parser = argparse.ArgumentParser(
@@ -49,6 +46,7 @@ class CommandLineInterface(object):
             )
             module.cli(subcommand)
 
+        from . import config
         parser.set_default_subparser(name=config.defaults.subcommand)
 
         args = parser.parse_args()
@@ -71,6 +69,8 @@ class CommandLineInterface(object):
 
     def __enter__(self):
         self.setup_logger()
+        self.arguments = self.read_cli_arguments(self.description,
+                                                 self.verbosity)
 
         # figure out which argument key is the longest so that all the
         # parameters can be printed out nicely
@@ -135,7 +135,7 @@ class CommandLineInterface(object):
         # create console handler with a higher log level
         command_line_logging = logging.StreamHandler()
 
-        if self.arguments.verbose:
+        if self.verbosity:
             command_line_logging.setLevel(logging.DEBUG)
 
             # add relpathname log format attribute so as to only show the file
