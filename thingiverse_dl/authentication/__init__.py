@@ -1,6 +1,7 @@
 import logging
 import urllib.parse
 import webbrowser
+import requests
 
 from thingiverse_dl import config
 from . import tempserver
@@ -30,9 +31,29 @@ def required(function):
 
         parsed_callback_url = urllib.parse.urlparse(server.requested_url)
         query = urllib.parse.parse_qs(parsed_callback_url.query)
-        code = query['code']
+        code = query['code'].pop()
 
         logger.warning(f'Callback url: {code}')
+
+        # Obtain token using code
+        response = requests.post(
+            'https://www.thingiverse.com/login/oauth/access_token',
+             data={
+                'code': code,
+                'client_id': config.secrets.client_id,
+                'client_secret': config.secrets.client_secret,
+             }
+        )
+
+        token_response = urllib.parse.parse_qs(response.text)
+        token = token_response['access_token'].pop()
+
+        authenticated_session = requests.Session()
+        authenticated_session.headers.update({
+            'Authorization': f'Bearer {token}'
+        })
+
+
 
         result = function(*args, **kwargs)
         logger.info(f'Returned value: {result}')
