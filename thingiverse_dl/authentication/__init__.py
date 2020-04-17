@@ -37,15 +37,17 @@ class AuthenticatedSession(requests.Session,
             'Authorization': f'Bearer {authentication_token}'
         })
 
-        self._last_called_on = datetime.datetime.fromtimestamp(0)
+        self._last_called_on = None
 
     def request(self, *args, **kwargs):
-        current_time = datetime.datetime.now()
-        previous_time = self._last_called_on
-        time_since_last_call = current_time - previous_time
-        if time_since_last_call < self.MINIMUM_WAIT_TIME:
-            logger.info(f'Waiting {time_since_last_call} until next call...')
-            time.sleep(time_since_last_call.seconds)
+        if self._last_called_on is not None:
+            current_time = datetime.datetime.now()
+            previous_time = self._last_called_on
+            time_since_last_call = current_time - previous_time
+            time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
+            if time_to_wait:  # > datetime.timedelta(seconds=0):
+                logger.info(f'Waiting {time_to_wait} until next call...')
+                time.sleep(time_to_wait.seconds)
 
         response = super().request(*args, **kwargs)
 

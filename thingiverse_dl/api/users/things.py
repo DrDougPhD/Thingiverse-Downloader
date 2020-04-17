@@ -26,6 +26,7 @@ class ThingiverseUserThings(ThingiverseAPIBase):
         for thing in self.json:
             yield ThingiverseUserThing(thing_api_response=thing)
 
+
 class ThingiverseUserThing(ThingiverseBase):
     def __init__(self, thing_api_response):
         super().__init__()

@@ -4,7 +4,7 @@
 
 import logging
 
-from thingiverse_dl.api import users
+from thingiverse_dl.api import users, things
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,11 @@ def main(args):
     logger.info('#### USERS ####')
     logger.info('#### THINGS ####')
     for t in user.things:
-        logger.info(t)
+        # logger.info(t)
+        # logger.info(t.id)
+        thing = things.get(id=t.id)
+        logger.info(f'\t{thing}')
+        for f in thing.files:
+            logger.info(f'\t\t{f}')
         logger.info('-'*120)
     logger.info('#### THINGS ####')
