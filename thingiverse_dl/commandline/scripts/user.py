@@ -22,5 +22,11 @@ def cli(subcommand):
 def main(args):
     # read from file system to learn about albums that have been ripped
     user = users.get(username=args.username)
+    logger.info('#### USERS ####')
     logger.info(str(user))
-    logger.info(user.things)
+    logger.info('#### USERS ####')
+    logger.info('#### THINGS ####')
+    for t in user.things:
+        logger.info(t)
+        logger.info('-'*120)
+    logger.info('#### THINGS ####')

@@ -19,7 +19,7 @@ def now():
 
 class AuthenticatedSession(requests.Session,
                            metaclass=Singleton):
-    MINIMUM_WAIT_TIME = datetime.timedelta(seconds=5)
+    MINIMUM_WAIT_TIME = datetime.timedelta(seconds=10)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
