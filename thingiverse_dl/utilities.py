@@ -6,7 +6,6 @@ import logging
 import pathlib
 import time
 
-import progressbar
 import requests
 import yarl
 
@@ -82,10 +81,7 @@ class DelayedNetworkRequest(requests.Session):
         time_to_wait = DelayedNetworkRequest.MINIMUM_WAIT_TIME - time_since_last_call
         if time_to_wait:  # > datetime.timedelta(seconds=0):
             logger.info(f'Waiting {time_to_wait} until next API call...')
-
-            tenth_seconds_remaining = int((1 + time_to_wait.seconds) * 10)
-            for _ in progressbar.progressbar(range(tenth_seconds_remaining)):
-                time.sleep(0.1)
+            time.sleep(time_to_wait.seconds + 1)
 
 
 def download(url: yarl.URL, to: pathlib.Path):

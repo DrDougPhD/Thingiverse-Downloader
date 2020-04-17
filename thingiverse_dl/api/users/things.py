@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def get(for_user):
-    return ThingiverseUserThings(for_user=for_user)
+    return list(ThingiverseUserThings(for_user=for_user))
 
 
 class ThingiverseUserThings(ThingiverseAPIBase):

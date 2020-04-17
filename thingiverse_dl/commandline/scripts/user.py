@@ -5,6 +5,8 @@
 import logging
 import pathlib
 
+import progressbar
+
 from thingiverse_dl.api import users, things
 
 logger = logging.getLogger(__name__)
@@ -25,9 +27,9 @@ def main(args):
     user = users.get(username=args.username)
     logger.info(user)
     download_directory = pathlib.Path('dl')/args.username
-    for t in user.things:
-        thing = things.get(id=t.id)
-        thing_download_directory = download_directory/str(t.id)
+    for user_thing in progressbar.progressbar(user.things):
+        thing = things.get(id=user_thing.id)
+        thing_download_directory = download_directory/str(user_thing.id)
         logger.info(f'\t{thing}')
         for f in thing.files:
             logger.info(f'\t\t{f}')
