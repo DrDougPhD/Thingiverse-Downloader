@@ -3,7 +3,12 @@
 import datetime
 import functools
 import logging
+import pathlib
 import time
+
+import progressbar
+import requests
+import yarl
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +57,48 @@ class DictionaryToObjectMapper(object):
 
     def __str__(self):
         return str(self.value)
+
+
+class DelayedNetworkRequest(requests.Session):
+    MINIMUM_WAIT_TIME = datetime.timedelta(seconds=10)
+    LAST_CALLED_ON = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def request(self, *args, **kwargs):
+        if self.LAST_CALLED_ON is not None:
+            self.wait()
+
+        response = super().request(*args, **kwargs)
+        self.LAST_CALLED_ON = datetime.datetime.now()
+
+        return response
+
+    def wait(self):
+        current_time = datetime.datetime.now()
+        previous_time = self.LAST_CALLED_ON
+        time_since_last_call = current_time - previous_time
+        time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
+        if time_to_wait:  # > datetime.timedelta(seconds=0):
+            logger.info(f'Waiting {time_to_wait} until next API call...')
+
+            tenth_seconds_remaining = int((1 + time_to_wait.seconds) * 10)
+            for _ in progressbar.progressbar(range(tenth_seconds_remaining)):
+                time.sleep(0.1)
+
+
+def download(url: yarl.URL, to: pathlib.Path):
+    logger.info(f'Starting download of {url} to {to}')
+    with DelayedNetworkRequest() as session:
+        with session.get(url, stream=True) as response:
+            response.raise_for_status()
+            with to.open('wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:  # filter out keep-alive new chunks
+                        file.write(chunk)
+                        # f.flush()
+    logger.info(f'Finished download of {url} to {to}')
 
 
 def singleton(cls):

@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import pathlib
 
 import humanfriendly
 
 from .. import ThingiverseAPIBase
 from .. import ThingiverseBase
+from ... import utilities
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +37,11 @@ class ThingiverseThingFile(ThingiverseBase):
         self._json = api_response
         self.resolve()
 
-    def download(self):
-        pass
+    def download(self, within: pathlib.Path):
+        within.mkdir(parents=True, exist_ok=True)
+        destination = within/self.name
+        utilities.download(url=self.public_url, to=destination)
+        return destination
 
     def __str__(self):
         logger.info(json.dumps(self._json, indent=4))

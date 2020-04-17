@@ -3,6 +3,7 @@
 """Download all stuff uploaded by a user"""
 
 import logging
+import pathlib
 
 from thingiverse_dl.api import users, things
 
@@ -23,9 +24,12 @@ def main(args):
     # read from file system to learn about albums that have been ripped
     user = users.get(username=args.username)
     logger.info(user)
+    download_directory = pathlib.Path('dl')/args.username
     for t in user.things:
         thing = things.get(id=t.id)
+        thing_download_directory = download_directory/str(t.id)
         logger.info(f'\t{thing}')
         for f in thing.files:
             logger.info(f'\t\t{f}')
+            f.download(within=thing_download_directory)
         logger.info('-'*120)

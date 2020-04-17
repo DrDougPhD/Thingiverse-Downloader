@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import datetime
 import logging
-import time
-
-import progressbar
-import requests
 
 from . import authenticate
 from . import authorize
+from ..utilities import DelayedNetworkRequest
 from ..utilities import Singleton
 
 logger = logging.getLogger(__name__)
@@ -18,10 +14,8 @@ def now():
     return AuthenticatedSession()
 
 
-class AuthenticatedSession(requests.Session,
+class AuthenticatedSession(DelayedNetworkRequest,
                            metaclass=Singleton):
-    MINIMUM_WAIT_TIME = datetime.timedelta(seconds=10)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -31,33 +25,6 @@ class AuthenticatedSession(requests.Session,
         # Obtain oath2 token for authentication
         authentication_token = authenticate.me(code=authorization_code)
 
-        # Assign token to session
-        authenticated_session = requests.Session()
-
         self.headers.update({
             'Authorization': f'Bearer {authentication_token}'
         })
-
-        self._last_called_on = None
-
-    def request(self, *args, **kwargs):
-        if self._last_called_on is not None:
-            self.wait()
-
-        response = super().request(*args, **kwargs)
-
-        self._last_called_on = datetime.datetime.now()
-
-        return response
-
-    def wait(self):
-        current_time = datetime.datetime.now()
-        previous_time = self._last_called_on
-        time_since_last_call = current_time - previous_time
-        time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
-        if time_to_wait:  # > datetime.timedelta(seconds=0):
-            logger.info(f'Waiting {time_to_wait} until next API call...')
-
-            tenth_seconds_remaining = int((1 + time_to_wait.seconds) * 10)
-            for _ in progressbar.progressbar(range(tenth_seconds_remaining)):
-                time.sleep(0.1)
