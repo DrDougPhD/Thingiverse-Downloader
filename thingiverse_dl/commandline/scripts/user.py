@@ -4,7 +4,6 @@
 
 import logging
 
-from thingiverse_dl import config
 from thingiverse_dl.api import users
 
 logger = logging.getLogger(__name__)
@@ -23,3 +22,5 @@ def cli(subcommand):
 def main(args):
     # read from file system to learn about albums that have been ripped
     user = users.get(username=args.username)
+    logger.info(str(user))
+    logger.info(user.things)

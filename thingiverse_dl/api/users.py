@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """REST API functions under the /users/* URL"""
-import requests
 import logging
 
 from . import ThingiverseBase
@@ -14,15 +13,27 @@ def get(username):
 
 
 class ThingiverseUser(ThingiverseBase):
+    URL_BASE_FORMAT = '/users/{0.username}'
+
     def __init__(self, username):
         super().__init__()
-        logger.info('ThingiverseUser init')
+        logger.info(f'ThingiverseUser init: {username}')
         self.username = username
         # response = requests.get(f'https://api.thingiverse.com/users/{username}')
         # print(response)
         # print(response.text)
         # print(response.json())
 
+    def resolve(self):
+        response = self.session.get(self.url_base)
+        payload = response.json()
+        return payload
+
     @property
     def things(self):
-        pass
+        return f'Things of {self.username}'
+
+    def __str__(self):
+        logger.info(self.url_base)
+        user_info = self.resolve()
+        return ''
