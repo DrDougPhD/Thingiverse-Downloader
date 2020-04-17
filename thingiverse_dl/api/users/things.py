@@ -10,17 +10,38 @@ logger = logging.getLogger(__name__)
 
 
 def get(for_user):
-    return list(ThingiverseUserThings(for_user=for_user))
+    things = ThingiverseUserThings(for_user=for_user)
+    while things.are_available():
+        things_page = things.next()
+        for thing in things_page:
+            yield thing
 
 
 class ThingiverseUserThings(ThingiverseAPIBase):
     def __init__(self, for_user):
         super().__init__()
         self.for_user = for_user
+        self.page = 0
+        self.page_contents = None
 
     @property
     def url(self):
-        return self.for_user.url/'things'
+        query_attrs = {
+            'per_page': self.PER_PAGE,
+        }
+        if self.page > 0:
+            query_attrs['page'] = self.page
+        url = (self.for_user.url/'things').with_query(query_attrs)
+        self.page += 1
+        return url
+
+    def are_available(self):
+        self.page_contents = list(self)
+        self._json = None
+        return len(self.page_contents) > 0
+
+    def next(self):
+        return self.page_contents
 
     def __iter__(self):
         for thing in self.json:

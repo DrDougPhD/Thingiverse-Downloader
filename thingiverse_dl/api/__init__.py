@@ -33,6 +33,7 @@ class ThingiverseBase(object):
 
 class ThingiverseAPIBase(ThingiverseBase):
     URL_FORMAT = yarl.URL('https://api.thingiverse.com')
+    PER_PAGE = 100
 
     def __init__(self):
         super().__init__()
