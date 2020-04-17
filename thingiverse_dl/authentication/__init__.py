@@ -4,6 +4,7 @@ import datetime
 import logging
 import time
 
+import progressbar
 import requests
 
 from . import authenticate
@@ -41,16 +42,22 @@ class AuthenticatedSession(requests.Session,
 
     def request(self, *args, **kwargs):
         if self._last_called_on is not None:
-            current_time = datetime.datetime.now()
-            previous_time = self._last_called_on
-            time_since_last_call = current_time - previous_time
-            time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
-            if time_to_wait:  # > datetime.timedelta(seconds=0):
-                logger.info(f'Waiting {time_to_wait} until next call...')
-                time.sleep(time_to_wait.seconds)
+            self.wait()
 
         response = super().request(*args, **kwargs)
 
         self._last_called_on = datetime.datetime.now()
 
         return response
+
+    def wait(self):
+        current_time = datetime.datetime.now()
+        previous_time = self._last_called_on
+        time_since_last_call = current_time - previous_time
+        time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
+        if time_to_wait:  # > datetime.timedelta(seconds=0):
+            logger.info(f'Waiting {time_to_wait} until next call...')
+
+            tenth_seconds_remaining = int((1 + time_to_wait.seconds) * 10)
+            for _ in progressbar.progressbar(range(tenth_seconds_remaining)):
+                time.sleep(0.1)

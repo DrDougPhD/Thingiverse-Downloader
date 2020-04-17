@@ -35,5 +35,5 @@ class ThingiverseThing(ThingiverseAPIBase):
         import json
         logger.info(json.dumps(user_info, indent=4))
         self.resolve()
-        return 'One Single Thing'
-        # return f'{self.name} ({self.full_name}): {self.public_url}'
+        # return 'One Single Thing'
+        return f'Item "{self.name}" by {self.creator.name}: {self.public_url}'
