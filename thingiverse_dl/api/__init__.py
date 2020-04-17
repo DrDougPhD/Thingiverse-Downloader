@@ -56,6 +56,7 @@ class ThingiverseAPIBase(ThingiverseBase):
     @property
     def json(self):
         if self._json is None:
-            logger.info(f'Loading {self.__class__.__name__} from {self.url}')
-            self._json = self.session.get(self.url).json()
+            url = self.url
+            logger.info(f'Loading {self.__class__.__name__} from {url}')
+            self._json = self.session.get(url).json()
         return self._json
