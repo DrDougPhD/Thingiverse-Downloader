@@ -8,6 +8,38 @@ import time
 logger = logging.getLogger(__name__)
 
 
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            logger.info(f'Initializing first instance of {cls.__class__.__name__}')
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        else:
+            logger.info(f'Cached initialed instance of {cls.__class__.__name__}: {cls._instances[cls]}')
+        return cls._instances[cls]
+
+
+def objectify(obj):
+    return DictionaryToObjectMapper(obj=obj)
+
+
+class DictionaryToObjectMapper(object):
+    def __init__(self, obj):
+        self.value = None
+        if type(obj) is dict:
+            for key, value in obj.items():
+                setattr(self, key, DictionaryToObjectMapper(obj=value))
+        elif type(obj) is list:
+            self.value = []
+            for value in obj:
+                self.value.append(DictionaryToObjectMapper(obj=value))
+        else:
+            self.value = obj
+
+    def __str__(self):
+        return str(self.value)
+
+
 def singleton(cls):
     """Make a class a Singleton class (only one instance)"""
     @functools.wraps(cls)
