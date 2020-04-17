@@ -4,7 +4,7 @@
 import logging
 
 from . import things
-from .. import ThingiverseBase
+from .. import ThingiverseAPIBase
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +13,8 @@ def get(username):
     return ThingiverseUser(username=username)
 
 
-class ThingiverseUser(ThingiverseBase):
-    URL_FORMAT = ThingiverseBase.URL_FORMAT/'users'
+class ThingiverseUser(ThingiverseAPIBase):
+    URL_FORMAT = ThingiverseAPIBase.URL_FORMAT/'users'
 
     def __init__(self, username):
         super().__init__()
