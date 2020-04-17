@@ -56,7 +56,7 @@ class AuthenticatedSession(requests.Session,
         time_since_last_call = current_time - previous_time
         time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
         if time_to_wait:  # > datetime.timedelta(seconds=0):
-            logger.info(f'Waiting {time_to_wait} until next call...')
+            logger.info(f'Waiting {time_to_wait} until next API call...')
 
             tenth_seconds_remaining = int((1 + time_to_wait.seconds) * 10)
             for _ in progressbar.progressbar(range(tenth_seconds_remaining)):

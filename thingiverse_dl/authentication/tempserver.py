@@ -36,14 +36,11 @@ class StoppableHTTPServer(http.server.HTTPServer):
             return False
 
         else:
-            logger.info('Authentication code catching server terminating')
             return True
 
 
 class SingleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        logger.warning('HTTP GET RECEIVED!')
-        logger.info(self.path)
         self.server.requested_url = self.path
 
         self.send_response(200)

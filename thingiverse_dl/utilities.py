@@ -12,15 +12,29 @@ class Singleton(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            logger.info(f'Initializing first instance of {cls.__class__.__name__}')
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        else:
-            logger.info(f'Cached initialed instance of {cls.__class__.__name__}: {cls._instances[cls]}')
         return cls._instances[cls]
+
+
+def classify(obj):
+    return converter.get(type(obj), lambda v: v)(obj)
 
 
 def objectify(obj):
     return DictionaryToObjectMapper(obj=obj)
+
+
+def listify(obj):
+    return [
+        converter[type(value)](value)
+        for value in obj
+    ]
+
+
+converter = {
+    dict: objectify,
+    list: listify,
+}
 
 
 class DictionaryToObjectMapper(object):
@@ -60,7 +74,7 @@ def slowdown(to):
             previous_time = slowdown_decorator.last_called_on
             time_since_last_call = current_time - previous_time
             if time_since_last_call > minimum_wait_time:
-                logger.info(f'Waiting {time_since_last_call} until next call...')
+                logger.info(f'Waiting {time_since_last_call} until next API call...')
                 time.sleep(time_since_last_call.seconds)
 
             response = function(*args, **kwargs)

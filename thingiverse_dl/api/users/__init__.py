@@ -18,7 +18,6 @@ class ThingiverseUser(ThingiverseAPIBase):
 
     def __init__(self, username):
         super().__init__()
-        logger.info(f'ThingiverseUser init: {username}')
         self._username = username
 
     @property
@@ -27,14 +26,8 @@ class ThingiverseUser(ThingiverseAPIBase):
 
     @property
     def things(self):
-        logger.info(f'Things of {self._username}...')
-        user_things = things.get(for_user=self)
-        return user_things
+        return things.get(for_user=self)
 
     def __str__(self):
-        logger.info(self.url)
-        user_info = self.json
-        import json
-        logger.info(json.dumps(user_info, indent=4))
         self.resolve()
         return f'{self.name} ({self.full_name}): {self.public_url}'

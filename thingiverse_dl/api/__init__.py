@@ -17,7 +17,7 @@ class ThingiverseBase(object):
     def resolve(self):
         for key, value in self.json.items():
             try:
-                setattr(self, key, utilities.objectify(value))
+                setattr(self, key, utilities.classify(value))
             except AttributeError:
                 logger.warning(
                     f'Attempted to set {key} on {self.__class__.__name__},'
@@ -36,7 +36,6 @@ class ThingiverseAPIBase(ThingiverseBase):
 
     def __init__(self):
         super().__init__()
-        logger.info('Thingiverse Base Class init')
         self._session = None
 
     # @utilities.slowdown(to=5)
@@ -56,5 +55,6 @@ class ThingiverseAPIBase(ThingiverseBase):
     @property
     def json(self):
         if self._json is None:
+            logger.info(f'Loading {self.__class__.__name__} from {self.url}')
             self._json = self.session.get(self.url).json()
         return self._json

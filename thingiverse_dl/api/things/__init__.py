@@ -30,10 +30,5 @@ class ThingiverseThing(ThingiverseAPIBase):
         return thing_files
 
     def __str__(self):
-        logger.info(self.url)
-        user_info = self.json
-        import json
-        logger.info(json.dumps(user_info, indent=4))
         self.resolve()
-        # return 'One Single Thing'
         return f'Item "{self.name}" by {self.creator.name}: {self.public_url}'

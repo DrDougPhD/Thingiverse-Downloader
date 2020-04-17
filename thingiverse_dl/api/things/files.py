@@ -3,6 +3,8 @@
 import json
 import logging
 
+import humanfriendly
+
 from .. import ThingiverseAPIBase
 from .. import ThingiverseBase
 
@@ -33,8 +35,10 @@ class ThingiverseThingFile(ThingiverseBase):
         self._json = api_response
         self.resolve()
 
+    def download(self):
+        pass
+
     def __str__(self):
         logger.info(json.dumps(self._json, indent=4))
-        return ''
-        # return f'Item "{self.name}" ({self.public_url}) by {self.creator.name}'
-
+        filesize = humanfriendly.format_size(self.size)
+        return f'{self.name} ({filesize}): {self.download_url}'
