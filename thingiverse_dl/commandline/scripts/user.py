@@ -27,7 +27,12 @@ def main(args):
     user = users.get(username=args.username)
     logger.info(user)
     download_directory = pathlib.Path('dl')/args.username
-    user_things = list(user.things)
+
+    logger.info(f'Loading basic info on things for user {args.username}')
+    user_things = []
+    for thing in progressbar.progressbar(user.things):
+        user_things.append(thing)
+
     logger.info(f'User {args.username} has {len(user_things)}!')
     for user_thing in progressbar.progressbar(user_things):
         thing = things.get(id=user_thing.id)
