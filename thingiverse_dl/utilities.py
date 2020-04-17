@@ -67,19 +67,19 @@ class DelayedNetworkRequest(requests.Session):
         super().__init__(*args, **kwargs)
 
     def request(self, *args, **kwargs):
-        if self.LAST_CALLED_ON is not None:
+        if DelayedNetworkRequest.LAST_CALLED_ON is not None:
             self.wait()
 
         response = super().request(*args, **kwargs)
-        self.LAST_CALLED_ON = datetime.datetime.now()
+        DelayedNetworkRequest.LAST_CALLED_ON = datetime.datetime.now()
 
         return response
 
     def wait(self):
         current_time = datetime.datetime.now()
-        previous_time = self.LAST_CALLED_ON
+        previous_time = DelayedNetworkRequest.LAST_CALLED_ON
         time_since_last_call = current_time - previous_time
-        time_to_wait = self.MINIMUM_WAIT_TIME - time_since_last_call
+        time_to_wait = DelayedNetworkRequest.MINIMUM_WAIT_TIME - time_since_last_call
         if time_to_wait:  # > datetime.timedelta(seconds=0):
             logger.info(f'Waiting {time_to_wait} until next API call...')
 

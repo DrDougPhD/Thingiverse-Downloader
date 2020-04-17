@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import json
 import logging
 import pathlib
 
@@ -44,6 +43,5 @@ class ThingiverseThingFile(ThingiverseBase):
         return destination
 
     def __str__(self):
-        logger.info(json.dumps(self._json, indent=4))
         filesize = humanfriendly.format_size(self.size)
         return f'{self.name} ({filesize}): {self.download_url}'
