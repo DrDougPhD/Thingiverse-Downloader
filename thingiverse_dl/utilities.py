@@ -9,6 +9,7 @@ import time
 
 import requests
 import yarl
+from retry import retry
 
 from thingiverse_dl import config
 
@@ -68,6 +69,10 @@ class DelayedNetworkRequest(requests.Session):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    @retry((requests.exceptions.ReadTimeout,
+            requests.exceptions.ConnectionError),
+           tries=3, delay=5,
+           logger=logger)
     def request(self, *args, **kwargs):
         if DelayedNetworkRequest.LAST_CALLED_ON is not None:
             self.wait()
