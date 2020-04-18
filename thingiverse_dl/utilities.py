@@ -63,21 +63,21 @@ class DictionaryToObjectMapper(object):
 
 
 class DelayedNetworkRequest(requests.Session):
-    MINIMUM_WAIT_TIME = datetime.timedelta(seconds=10)
     LAST_CALLED_ON = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     @retry((requests.exceptions.ReadTimeout,
-            requests.exceptions.ConnectionError),
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout),
            tries=3, delay=5,
            logger=logger)
     def request(self, *args, **kwargs):
         if DelayedNetworkRequest.LAST_CALLED_ON is not None:
             self.wait()
 
-        response = super().request(*args, **kwargs)
+        response = super().request(timeout=config.defaults.timeout, *args, **kwargs)
         DelayedNetworkRequest.LAST_CALLED_ON = datetime.datetime.now()
 
         return response
@@ -86,7 +86,7 @@ class DelayedNetworkRequest(requests.Session):
         current_time = datetime.datetime.now()
         previous_time = DelayedNetworkRequest.LAST_CALLED_ON
         time_since_last_call = current_time - previous_time
-        time_to_wait = DelayedNetworkRequest.MINIMUM_WAIT_TIME - time_since_last_call
+        time_to_wait = config.defaults.delay - time_since_last_call
         if time_to_wait:  # > datetime.timedelta(seconds=0):
             logger.info(f'Waiting {time_to_wait} until next API call...')
             time.sleep(time_to_wait.seconds + 1)

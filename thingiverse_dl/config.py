@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 import pathlib
 import sys
@@ -16,6 +17,8 @@ class defaults(object):
     subcommand = 'user'
     cache = root/'.cache'
     download_directory = root/'download'
+    delay = datetime.timedelta(seconds=5)
+    timeout = 10
 
 
 class secrets(object):
