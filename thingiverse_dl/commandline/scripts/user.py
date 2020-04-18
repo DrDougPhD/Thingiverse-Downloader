@@ -3,11 +3,12 @@
 """Download all stuff uploaded by a user"""
 
 import logging
-import pathlib
 
 import progressbar
 
-from thingiverse_dl.api import users, things
+from thingiverse_dl import config
+from thingiverse_dl.api import things
+from thingiverse_dl.api import users
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ def main(args):
     # read from file system to learn about albums that have been ripped
     user = users.get(username=args.username)
     logger.info(user)
-    download_directory = pathlib.Path('dl')/args.username
+    download_directory = config.defaults.download_directory/args.username
 
     logger.info(f'Loading basic info on things for user {args.username}')
     user_things = []

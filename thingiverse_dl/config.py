@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 import pathlib
 import sys
+
 import yaml
-import logging
 
 logger = logging.getLogger(__name__)
+root = pathlib.Path(__file__).parent.parent.resolve()
 
 
 class defaults(object):
     '''Default configuration for application
     '''
     subcommand = 'user'
+    cache = root/'.cache'
+    download_directory = root/'download'
 
 
 class secrets(object):

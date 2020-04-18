@@ -54,6 +54,7 @@ class ThingiverseAPIBase(ThingiverseBase):
         )
 
     @property
+    @utilities.cached_json(key='url')
     def json(self):
         if self._json is None:
             url = self.url

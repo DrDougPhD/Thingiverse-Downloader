@@ -32,7 +32,6 @@ class ThingiverseUserThings(ThingiverseAPIBase):
         if self.page > 0:
             query_attrs['page'] = self.page
         url = (self.for_user.url/'things').with_query(query_attrs)
-        self.page += 1
         return url
 
     def are_available(self):
@@ -41,6 +40,7 @@ class ThingiverseUserThings(ThingiverseAPIBase):
         return len(self.page_contents) > 0
 
     def next(self):
+        self.page += 1
         return self.page_contents
 
     def __iter__(self):

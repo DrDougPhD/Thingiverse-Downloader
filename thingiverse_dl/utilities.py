@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 import datetime
 import functools
+import json
 import logging
 import pathlib
 import time
 
 import requests
 import yarl
+
+from thingiverse_dl import config
 
 logger = logging.getLogger(__name__)
 
@@ -84,19 +87,6 @@ class DelayedNetworkRequest(requests.Session):
             time.sleep(time_to_wait.seconds + 1)
 
 
-def download(url: yarl.URL, to: pathlib.Path):
-    logger.info(f'Starting download of {url} to {to}')
-    with DelayedNetworkRequest() as session:
-        with session.get(url, stream=True) as response:
-            response.raise_for_status()
-            with to.open('wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:  # filter out keep-alive new chunks
-                        file.write(chunk)
-                        # f.flush()
-    logger.info(f'Finished download of {url} to {to}')
-
-
 def singleton(cls):
     """Make a class a Singleton class (only one instance)"""
     @functools.wraps(cls)
@@ -129,3 +119,109 @@ def slowdown(to):
 
     slowdown_decorator.last_called_on = datetime.datetime.fromtimestamp(0)
     return slowdown_decorator
+
+
+def safe_filename(value):
+    keepcharacters = {' ', '.', '_', '-'}
+    return ''.join([
+        c
+        for c in str(value)
+        if c.isalnum()
+           or c in keepcharacters
+    ]).rstrip()
+
+
+class CachedDecorator(object):
+    def __init__(self, key):
+        self.key = key
+
+    def get_caching_value(self, obj, *args, **kwargs):
+        return kwargs[self.key] if obj is None else getattr(obj, self.key)
+
+    def get_object_instance(self, *args):
+        return None if len(args) == 0 else args[0]
+
+
+class cached_json(CachedDecorator):
+    def __call__(self, function):
+        def wrapper(*args, **kwargs):
+            obj = self.get_object_instance(*args)
+            caching_attr_value = self.get_caching_value(
+                obj=obj,
+                *(args[1:] if len(args) > 1 else tuple()),
+                **kwargs
+            )
+
+            logger.info(f'Looking up cache for {self.key}={caching_attr_value}...')
+
+            safe_filename_value = safe_filename(value=caching_attr_value)
+            cache_file_name = '{}.json'.format(safe_filename_value) \
+                .replace('/', '-')
+
+            cache_directory \
+                = config.defaults.cache / obj.__class__.__name__ / function.__name__
+
+            cache_directory.mkdir(parents=True, exist_ok=True)
+            cache_path = cache_directory / cache_file_name
+
+            try:
+                cache = json.loads(cache_path.read_text())
+                logger.debug('JSON cache loaded for {key} from {path}'.format(
+                    key=caching_attr_value,
+                    path=cache_path
+                ))
+            except IOError:
+                # cache doesn't exist
+                logger.debug('No JSON cache for {}'.format(caching_attr_value))
+                cache = function(*args, **kwargs)
+
+                try:
+                    file = cache_path.open('w')
+                except OSError:
+                    import hashlib
+                    checksum = hashlib.sha1()
+                    checksum.update(caching_attr_value.encode('utf-8'))
+                    cache_file_name = '{}.json'.format(checksum.hexdigest())
+                    cache_path = cache_directory / cache_file_name
+                    file = cache_path.open('w')
+                json.dump(cache, file, indent=4, sort_keys=True)
+                file.close()
+            return cache
+        return wrapper
+
+
+class cached_file(CachedDecorator):
+    def __call__(self, function):
+        def wrapper(*args, **kwargs):
+            obj = self.get_object_instance(*args)
+            cached_file_path = self.get_caching_value(
+                obj=obj,
+                *(args[1:] if len(args) > 1 else tuple()),
+                **kwargs
+            )
+
+            logger.info(f'Looking up pre-downloaded file for'
+                        f' {self.key}={cached_file_path}...')
+
+            if cached_file_path.exists():
+                logger.info(f'File already exists at {cached_file_path}')
+                return
+
+            logger.debug('No cached file for {}'.format(cached_file_path))
+            cache = function(*args, **kwargs)
+            return cache
+        return wrapper
+
+
+@cached_file(key='to')
+def download(url: yarl.URL, to: pathlib.Path):
+    logger.info(f'Starting download of {url} to {to}')
+    with DelayedNetworkRequest() as session:
+        with session.get(url, stream=True) as response:
+            response.raise_for_status()
+            with to.open('wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:  # filter out keep-alive new chunks
+                        file.write(chunk)
+                        # f.flush()
+    logger.info(f'Finished download of {url} to {to}')
