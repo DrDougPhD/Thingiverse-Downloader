@@ -87,7 +87,7 @@ class DelayedNetworkRequest(requests.Session):
         previous_time = DelayedNetworkRequest.LAST_CALLED_ON
         time_since_last_call = current_time - previous_time
         time_to_wait = config.defaults.delay - time_since_last_call
-        if time_to_wait:  # > datetime.timedelta(seconds=0):
+        if time_to_wait > datetime.timedelta(seconds=0):
             logger.info(f'Waiting {time_to_wait} until next API call...')
             time.sleep(time_to_wait.seconds + 1)
 

@@ -43,5 +43,8 @@ class ThingiverseThingFile(ThingiverseBase):
         return destination
 
     def __str__(self):
-        filesize = humanfriendly.format_size(self.size)
+        if self.size is None:
+            filesize = self.formatted_size
+        else:
+            filesize = humanfriendly.format_size(self.size)
         return f'{self.name} ({filesize}): {self.download_url}'
